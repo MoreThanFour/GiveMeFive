@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.parse.LogInCallback;
@@ -37,6 +38,11 @@ public class MainActivity extends Activity {
         // Sync Facebook with Parse
         ParseFacebookUtils.initialize(this.getApplicationContext());
 
+        if (AccessToken.getCurrentAccessToken() != null) {
+            Log.d("TEST","TEST");
+            Intent intent = new Intent(MainActivity.this, MenuActivity.class);
+            startActivity(intent);
+        }
         // Set activity's view
         setContentView(R.layout.activity_main);
 
@@ -59,9 +65,10 @@ public class MainActivity extends Activity {
                             if (user.isNew()) {
                                 Log.d("LOGIN", "User signed up and logged in through Facebook!");
                             } else {
-
+                                Log.d("LOGIN", "User logged in through Facebook!");
                             }
-                            Log.d("LOGIN", "User logged in through Facebook!");
+                            Intent intent = new Intent(MainActivity.this, MenuActivity.class);
+                            startActivity(intent);
                         }
                     }
                 });

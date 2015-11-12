@@ -3,5 +3,11 @@
     <string name="buttonLoginWithFacebook">Log in with Facebook !</string>
     <string name="facebook_app_id">963634523703017</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="title_activity_menu">MenuActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 
 </resources>
