@@ -1,5 +1,6 @@
 package com.morethanfour.givemefive;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
@@ -21,11 +22,14 @@ import com.facebook.Profile;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.parse.Parse;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView loginName;
+    private LoginButton loginButton;
+    private CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,31 +38,46 @@ public class MainActivity extends AppCompatActivity {
         // Initialize Parse
         Parse.initialize(this, "YaCzPCUVo20yXIbc4ZeKCh6leX2g7nuDRZyW32VC", "pFUZc2aWVUMvkjfnVJM1lH9bkPLLXQdgCuUfPPyE");
 
-        FacebookSdk.sdkInitialize(this.getApplicationContext());
-
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
         setContentView(R.layout.activity_main);
 
-        CallbackManager callbackManager = CallbackManager.Factory.create();
+        loginButton = (LoginButton)findViewById(R.id.login_button);
+        loginName = (TextView) findViewById(R.id.textview_login);
 
-        LoginManager.getInstance().registerCallback(callbackManager,
-                new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        loginName = (TextView) findViewById(R.id.textview_login);
-                        loginName.setText(Profile.getCurrentProfile().getFirstName());
-                        Log.d("LOGIN", "Succefully logged with token:" + loginResult.getAccessToken());
-                    }
 
-                    @Override
-                    public void onCancel() {
-                        // App code
-                    }
+        if (AccessToken.getCurrentAccessToken() == null){
+            Log.d("LOGIN", "Not logged with Facebook");
 
-                    @Override
-                    public void onError(FacebookException exception) {
-                        Log.d("LOGIN ERROR", exception.toString());
-                    }
-                });
+            loginButton.registerCallback(callbackManager,
+                    new FacebookCallback<LoginResult>() {
+                        @Override
+                        public void onSuccess(LoginResult loginResult) {
+                            AccessToken.setCurrentAccessToken(loginResult.getAccessToken());
+                            loginName.setText(Profile.getCurrentProfile().getFirstName());
+                            Log.d("LOGIN", "Succefully logged with token:" + loginResult.getAccessToken());
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            // App code
+                        }
+
+                        @Override
+                        public void onError(FacebookException exception) {
+                            Log.d("LOGIN ERROR", exception.toString());
+                        }
+                    });
+        } else {
+            //loginButton.setVisibility(View.GONE);
+            Log.d("LOGIN", "Already logged with Facebook");
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -76,16 +95,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (AccessToken.getCurrentAccessToken() == null){
-            Log.d("LOGIN", "Not logged with Facebook");
-
-
-        } else {
-
-            LoginManager.getInstance().logOut();
-            Log.d("LOGIN", "Disconnect");
-        }
 
         // Logs 'install' and 'app activate' App Events.
         AppEventsLogger.activateApp(this);
