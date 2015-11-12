@@ -2,39 +2,31 @@ package com.morethanfour.givemefive;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.TextView;
+import android.widget.Button;
 
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.Profile;
 import com.facebook.appevents.AppEventsLogger;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
+import com.parse.LogInCallback;
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseUser;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView loginName;
-    private LoginButton loginButton;
-    private CallbackManager callbackManager;
+    private Button loginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d("WIA", "ON CREATE");
 
         // Initialize Parse App
         Parse.initialize(this, "YaCzPCUVo20yXIbc4ZeKCh6leX2g7nuDRZyW32VC", "pFUZc2aWVUMvkjfnVJM1lH9bkPLLXQdgCuUfPPyE");
@@ -45,47 +37,40 @@ public class MainActivity extends AppCompatActivity {
         // Sync Facebook with Parse
         ParseFacebookUtils.initialize(this.getApplicationContext());
 
-        callbackManager = CallbackManager.Factory.create();
+        // Set activity's view
         setContentView(R.layout.activity_main);
 
-        loginButton = (LoginButton)findViewById(R.id.login_button);
-        loginName = (TextView) findViewById(R.id.textview_login);
+        // Setup login button
+        loginButton = (Button) findViewById(R.id.loginButton);
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Collection<String> permissions = new ArrayList<String>();
+                permissions.add("public_profile");
+                permissions.add("user_friends");
+                permissions.add("email");
 
-
-        if (AccessToken.getCurrentAccessToken() == null){
-            Log.d("LOGIN", "Not logged with Facebook");
-
-            loginButton.registerCallback(callbackManager,
-                    new FacebookCallback<LoginResult>() {
-                        @Override
-                        public void onSuccess(LoginResult loginResult) {
-                            AccessToken.setCurrentAccessToken(loginResult.getAccessToken());
-                            loginName.setText(Profile.getCurrentProfile().getFirstName());
-                            Log.d("LOGIN", "Succefully logged with token:" + loginResult.getAccessToken());
+                ParseFacebookUtils.logInWithReadPermissionsInBackground(MainActivity.this, permissions, new LogInCallback() {
+                    @Override
+                    public void done(ParseUser user, ParseException err) {
+                        if (user == null) {
+                            Log.d("LOGIN", "Uh oh. The user cancelled the Facebook login.");
+                        } else if (user.isNew()) {
+                            Log.d("LOGIN", "User signed up and logged in through Facebook!");
+                        } else {
+                            Log.d("LOGIN", "User logged in through Facebook!");
                         }
-
-                        @Override
-                        public void onCancel() {
-                            // App code
-                        }
-
-                        @Override
-                        public void onError(FacebookException exception) {
-                            Log.d("LOGIN ERROR", exception.toString());
-                        }
-                    });
-        } else {
-            //loginButton.setVisibility(View.GONE);
-            Log.d("LOGIN", "Already logged with Facebook");
-        }
-
+                    }
+                });
+            }
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        callbackManager.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
+        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
     }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -125,6 +110,4 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
 
     }
-
-
 }
