@@ -24,6 +24,7 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.parse.Parse;
+import com.parse.ParseFacebookUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,10 +36,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Initialize Parse
+        // Initialize Parse App
         Parse.initialize(this, "YaCzPCUVo20yXIbc4ZeKCh6leX2g7nuDRZyW32VC", "pFUZc2aWVUMvkjfnVJM1lH9bkPLLXQdgCuUfPPyE");
 
-        FacebookSdk.sdkInitialize(getApplicationContext());
+        // Initialize Facebook App
+        FacebookSdk.sdkInitialize(this.getApplicationContext());
+
+        // Sync Facebook with Parse
+        ParseFacebookUtils.initialize(this.getApplicationContext());
+
         callbackManager = CallbackManager.Factory.create();
         setContentView(R.layout.activity_main);
 
