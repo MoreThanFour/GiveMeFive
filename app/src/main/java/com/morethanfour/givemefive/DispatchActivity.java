@@ -25,6 +25,5 @@ public class DispatchActivity extends Activity {
         else{
             startActivity(new Intent(this, LoginActivity.class));
         }
-
     }
 }
