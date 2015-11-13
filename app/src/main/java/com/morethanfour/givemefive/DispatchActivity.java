@@ -19,8 +19,10 @@ public class DispatchActivity extends Activity {
         // Start an intent for the login activity if the user is not logged in
         // or the main activity if the user il already logged
         if (ParseUser.getCurrentUser() != null){
-            ParseUser.logOut();
+
             startActivity(new Intent(this, MainActivity.class));
+            //AUTO LOG OUT
+            ParseUser.logOut();
         }
         else{
             startActivity(new Intent(this, LoginActivity.class));

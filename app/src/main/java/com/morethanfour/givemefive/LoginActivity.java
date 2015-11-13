@@ -25,12 +25,6 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Sync Facebook with Parse
-        ParseFacebookUtils.initialize(getApplicationContext());
-
-        // Initialize Facebook App
-        FacebookSdk.sdkInitialize(getApplicationContext());
-
         // Set activity's view
         setContentView(R.layout.activity_login);
 

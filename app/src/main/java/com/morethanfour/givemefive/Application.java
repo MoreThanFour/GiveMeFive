@@ -1,5 +1,6 @@
 package com.morethanfour.givemefive;
 
+import com.facebook.FacebookSdk;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
 
@@ -26,5 +27,10 @@ public class Application extends android.app.Application {
         // Initialize Parse App
         Parse.initialize(this, "YaCzPCUVo20yXIbc4ZeKCh6leX2g7nuDRZyW32VC", "pFUZc2aWVUMvkjfnVJM1lH9bkPLLXQdgCuUfPPyE");
 
+        // Sync Facebook with Parse
+        ParseFacebookUtils.initialize(getApplicationContext());
+
+        // Initialize Facebook App
+        FacebookSdk.sdkInitialize(getApplicationContext());
     }
 }
