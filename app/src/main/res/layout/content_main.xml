@@ -11,4 +11,9 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_menu"
     tools:context="com.morethanfour.givemefive.MainActivity">
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/activity_maps"/>
 </RelativeLayout>
