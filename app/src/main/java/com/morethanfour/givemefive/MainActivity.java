@@ -3,7 +3,10 @@ package com.morethanfour.givemefive;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -15,6 +18,7 @@ import java.util.ArrayList;
 public class MainActivity extends Activity {
 
     private ListView ListViewFriend;
+    DrawerLayout drawer;
     private ArrayList<String> listItems;
 
     @Override
@@ -23,23 +27,31 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         startService(new Intent(this, LocationService.class));
 
+        ListViewFriend = (ListView) findViewById(R.id.left_drawer);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listItems = new ArrayList<String>();
 
-        Intent intent = getIntent();
+        displayFriendList(getIntent());
+    }
+
+    private void displayFriendList(Intent intent) {
         try {
             JSONArray FriendList = new JSONArray(intent.getStringExtra("FriendList"));
             for (int i = 0; i < FriendList.length(); i++) {
                 Log.d("JSON", FriendList.getJSONObject(i).toString());
-                listItems.add((String) FriendList.getJSONObject(i).get("name") + FriendList.getJSONObject(i).get("id"));
+                listItems.add((String) FriendList.getJSONObject(i).get("name"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        ListViewFriend = (ListView) findViewById(R.id.left_drawer);
 
         // Set the adapter for the list view
         ListViewFriend.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_listview_item, listItems));
+    }
+
+    public void onClickFloatingButtonOpenDrawer(View v){
+        drawer.openDrawer(Gravity.LEFT);
     }
 
 }
