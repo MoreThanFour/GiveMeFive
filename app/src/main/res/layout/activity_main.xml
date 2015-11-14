@@ -3,13 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <!-- The main content view -->
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            android:name="com.google.android.gms.maps.MapFragment"
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
         <ImageButton
             android:id="@+id/fab"
@@ -19,9 +26,10 @@
             android:clickable="true"
             android:src="@drawable/ic_menu_black_24dp"
             app:layout_anchor="@id/content_frame"
-            app:layout_anchorGravity="top|left"
-            android:layout_gravity="left|top"
+            app:layout_anchorGravity="top|right"
+            android:layout_gravity="right|top"
             android:onClick="onClickFloatingButtonOpenDrawer"/>
+
     </FrameLayout>
 
     <!-- The navigation drawer -->
@@ -29,7 +37,7 @@
         android:id="@+id/left_drawer"
         android:layout_width="240dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
+        android:layout_gravity="right"
         android:background="#E0E0E0"
         android:choiceMode="singleChoice"
         android:divider="@android:color/transparent"

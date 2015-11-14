@@ -10,12 +10,19 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import java.util.ArrayList;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnMapReadyCallback {
 
     private ListView ListViewFriend;
     DrawerLayout drawer;
@@ -27,11 +34,20 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         startService(new Intent(this, LocationService.class));
 
+        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         ListViewFriend = (ListView) findViewById(R.id.left_drawer);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listItems = new ArrayList<String>();
 
         displayFriendList(getIntent());
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+
+
     }
 
     private void displayFriendList(Intent intent) {
@@ -51,7 +67,7 @@ public class MainActivity extends Activity {
     }
 
     public void onClickFloatingButtonOpenDrawer(View v){
-        drawer.openDrawer(Gravity.LEFT);
+        drawer.openDrawer(Gravity.RIGHT);
     }
 
 }
