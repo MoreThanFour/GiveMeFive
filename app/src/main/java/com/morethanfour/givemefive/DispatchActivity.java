@@ -26,6 +26,9 @@ public class DispatchActivity extends Activity {
         // Start an intent for the login activity if the user is not logged in
         // or the main activity if the user il already logged
         if (AccessToken.getCurrentAccessToken() != null) {
+            Intent intent = new Intent(this, BackgroundService.class);
+            startService(intent);
+
             requestUserFriends(AccessToken.getCurrentAccessToken());
         } else {
             startActivity(new Intent(this, LoginActivity.class));
