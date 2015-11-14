@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -16,8 +17,7 @@ import org.json.JSONObject;
 
 public class DispatchActivity extends Activity {
 
-    public DispatchActivity() {
-    }
+    public DispatchActivity() {}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,31 +25,39 @@ public class DispatchActivity extends Activity {
 
         // Start an intent for the login activity if the user is not logged in
         // or the main activity if the user il already logged
+        if (AccessToken.getCurrentAccessToken() != null) {
+            requestUserFriends(AccessToken.getCurrentAccessToken());
+        } else {
+            startActivity(new Intent(this, LoginActivity.class));
+        }
+    }
 
-        if (ParseUser.getCurrentUser() != null){
-            new GraphRequest(
-                    AccessToken.getCurrentAccessToken(),
-                    "/me/friends",
-                    null,
-                    HttpMethod.GET,
-                    new GraphRequest.Callback() {
-                        public void onCompleted(GraphResponse response) {
-                            //ParseUser.logOut();
-                            JSONObject data = response.getJSONObject();
-
-                            try {
-                                Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
-                                toMainActivity.putExtra("FriendList", data.getJSONArray("data").toString());
-                                startActivity(toMainActivity);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+    private void requestUserFriends(AccessToken currentAccessToken) {
+        new GraphRequest(
+                currentAccessToken,
+                "/me/friends",
+                null,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+                        if (response.getError() == null){
+                            startMainActivity(response.getJSONObject());
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Can't access user's friend list from FB.",
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
-            ).executeAsync();
-        }
-        else{
-            startActivity(new Intent(this, LoginActivity.class));
+                }
+        ).executeAsync();
+    }
+
+    private void startMainActivity(JSONObject data) {
+        try {
+            Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
+            toMainActivity.putExtra("FriendList", data.getJSONArray("data").toString());
+            startActivity(toMainActivity);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }
