@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -26,7 +27,7 @@ public class DispatchActivity extends Activity {
         // Start an intent for the login activity if the user is not logged in
         // or the main activity if the user il already logged
 
-        if (ParseUser.getCurrentUser() != null){
+        if (ParseUser.getCurrentUser() != null) {
             new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
                     "/me/friends",
@@ -35,20 +36,24 @@ public class DispatchActivity extends Activity {
                     new GraphRequest.Callback() {
                         public void onCompleted(GraphResponse response) {
                             //ParseUser.logOut();
-                            JSONObject data = response.getJSONObject();
+                            if (response != null) {
+                                JSONObject data = response.getJSONObject();
 
-                            try {
-                                Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
-                                toMainActivity.putExtra("FriendList", data.getJSONArray("data").toString());
-                                startActivity(toMainActivity);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                                try {
+                                    Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
+                                    toMainActivity.putExtra("FriendList", data.getJSONArray("data").toString());
+                                    startActivity(toMainActivity);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Can't access user's friend list from FB.",
+                                        Toast.LENGTH_LONG).show();
                             }
                         }
                     }
             ).executeAsync();
-        }
-        else{
+        } else {
             startActivity(new Intent(this, LoginActivity.class));
         }
     }
