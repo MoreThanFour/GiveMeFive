@@ -7,6 +7,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -69,5 +71,4 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     public void onClickFloatingButtonOpenDrawer(View v){
         drawer.openDrawer(Gravity.RIGHT);
     }
-
 }
