@@ -45,6 +45,7 @@ public class DispatchActivity extends Activity {
                         } else {
                             Toast.makeText(getApplicationContext(), "Can't access user's friend list from FB.",
                                     Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(Activity.this, LoginActivity.class));
                         }
                     }
                 }
