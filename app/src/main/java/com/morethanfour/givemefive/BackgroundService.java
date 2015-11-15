@@ -14,22 +14,35 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.model.LatLng;
+import com.parse.FindCallback;
+import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BackgroundService extends Service
 {
     // ----- CONSTANTS -----
+
     private static final String TAG = "BACKGROUND_SERVICE";
     private static final int TWO_MINUTES = 1000 * 60 * 2;
-    private static final int THIRTY_SECONDS = 1000 * 30;
+    private static final int TIME_OF_SLEEP = 1000 * 10;
 
     // ----- VARIABLES -----
+    private ArrayList<String> friendsId;
+    private ArrayList<Boolean> friendsIsNear;
+
     private Boolean isRunning;
-    private LatLng location;
+    private Location currentLocation;
 
     // ----- CONSTRUCTORS -----
+
     public BackgroundService()
     {
         super();
@@ -38,6 +51,7 @@ public class BackgroundService extends Service
 
     // ----- OVERRIDE METHODS -----
     // Service methods
+
     @Override
     public void onCreate()
     {
@@ -46,7 +60,6 @@ public class BackgroundService extends Service
         super.onCreate();
 
         isRunning = true;
-        location = new LatLng(0.0, 0.0);
 
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -56,7 +69,12 @@ public class BackgroundService extends Service
             public void onLocationChanged(Location location)
             {
                 Log.i(TAG, "onLocationChanged");
-                Log.i(TAG, "" + location.getLatitude() + " " + location.getLongitude());
+                Log.i(TAG, "New location: 'lat' = " + location.getLatitude() + ", 'long' = " + location.getLongitude());
+
+                if (isBetterLocation(location, currentLocation))
+                {
+                    currentLocation = location;
+                }
             }
 
             @Override
@@ -101,9 +119,12 @@ public class BackgroundService extends Service
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId)
+    public int onStartCommand(final Intent intent, int flags, int startId)
     {
         Log.i(TAG, "onStartCommand");
+
+        // Initialize friends
+        initFriends(intent);
 
         //Creating new thread for background service
         new Thread(new Runnable()
@@ -115,7 +136,7 @@ public class BackgroundService extends Service
                 {
                     try
                     {
-                        Thread.sleep(THIRTY_SECONDS);
+                        Thread.sleep(TIME_OF_SLEEP);
                         Log.d(TAG, "Time to restart");
                     }
                     catch (InterruptedException e)
@@ -127,11 +148,44 @@ public class BackgroundService extends Service
 
                     if (currentUser != null)
                     {
-                        ParseGeoPoint currentUserLocation = new ParseGeoPoint(location.latitude, location.longitude);
-                        currentUser.put("location", currentUserLocation);
+                        // Update current user location into Parse Database.
+                        ParseGeoPoint currentParseLocation = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        currentUser.put("location", currentParseLocation);
                         currentUser.saveEventually();
 
+                        //
+                        List<ParseQuery<ParseUser>> friendsQuery = new ArrayList<ParseQuery<ParseUser>>();
 
+                        for (int i = 0; i < friendsId.size(); i++)
+                        {
+                            ParseQuery<ParseUser> friendQuery = ParseUser.getQuery();
+                            friendQuery.whereEqualTo("facebookId", friendsId.get(i));
+
+                            friendsQuery.add(friendQuery);
+                        }
+
+                        ParseQuery.or(friendsQuery).findInBackground(new FindCallback<ParseUser>()
+                        {
+                            public void done(List<ParseUser> objects, ParseException e)
+                            {
+                                if (e == null)
+                                {
+                                    // The query was successful.
+
+                                    for (int i = 0; i < objects.size(); i++)
+                                    {
+                                        Log.d(TAG, objects.get(i).get("location").toString());
+                                    }
+
+                                    // TODO: Look for each user if anyone is into the perimeter. For each one, call the Cloud Code to notify myself
+                                }
+                                else
+                                {
+                                    // Something went wrong.
+                                    Log.e(TAG, "ERROR " + e.getCode() + ": " + e.getLocalizedMessage());
+                                }
+                            }
+                        });
                     }
                 }
             }
@@ -159,6 +213,31 @@ public class BackgroundService extends Service
 
     // ----- INSTANCE METHODS -----
 
+    private void initFriends(Intent intent)
+    {
+        Log.d(TAG, "Getting friend list");
+
+        friendsId = new ArrayList<String>();
+        friendsIsNear = new ArrayList<Boolean>();
+
+        try
+        {
+            JSONArray friendList = new JSONArray(intent.getStringExtra("friendList"));
+
+            for (int i = 0; i < friendList.length(); i++)
+            {
+                Log.d(TAG, "'facebookId' = " + friendList.getJSONObject(i).toString());
+
+                friendsId.add((String) friendList.getJSONObject(i).get("id"));
+                friendsIsNear.add(false);
+            }
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
     /**
      * Determines whether one Location reading is better than the current Location fix
      * @param location The new Location that you want to evaluate
