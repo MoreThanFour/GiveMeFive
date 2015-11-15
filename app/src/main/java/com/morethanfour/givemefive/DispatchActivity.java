@@ -45,6 +45,7 @@ public class DispatchActivity extends Activity {
                         } else {
                             Toast.makeText(getApplicationContext(), "Can't access user's friend list from FB.",
                                     Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(DispatchActivity.this, LoginActivity.class));
                         }
                     }
                 }
@@ -54,11 +55,11 @@ public class DispatchActivity extends Activity {
     private void startMainActivity(JSONObject data) {
         try {
             Intent toBackgroundService = new Intent(this, BackgroundService.class);
-            toBackgroundService.putExtra("FriendList", data.getJSONArray("data").toString());
+            toBackgroundService.putExtra("friendList", data.getJSONArray("data").toString());
             startService(toBackgroundService);
 
             Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
-            toMainActivity.putExtra("FriendList", data.getJSONArray("data").toString());
+            toMainActivity.putExtra("friendList", data.getJSONArray("data").toString());
             startActivity(toMainActivity);
         } catch (JSONException e) {
             e.printStackTrace();
