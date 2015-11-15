@@ -3,6 +3,7 @@ package com.morethanfour.givemefive;
 import com.facebook.FacebookSdk;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseInstallation;
 
 public class Application extends android.app.Application {
 
@@ -32,5 +33,8 @@ public class Application extends android.app.Application {
 
         // Initialize Facebook App
         FacebookSdk.sdkInitialize(getApplicationContext());
+
+        // Save installation into Parse Database for Push Notification.
+        ParseInstallation.getCurrentInstallation().saveInBackground();
     }
 }
