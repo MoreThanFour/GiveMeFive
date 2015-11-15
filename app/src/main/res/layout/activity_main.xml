@@ -30,7 +30,8 @@
             app:layout_anchor="@id/content_frame"
             app:layout_anchorGravity="bottom|right"
             android:layout_gravity="right|top"
-            android:onClick="onClickFloatingButtonOpenDrawer"/>
+            android:onClick="onClickFloatingButtonOpenDrawer"
+            android:background="#00ffffff"/>
 
     </FrameLayout>
 
