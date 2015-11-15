@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "GiveMeFive": {
+      "applicationId": "YaCzPCUVo20yXIbc4ZeKCh6leX2g7nuDRZyW32VC"
+    },
+    "_default": {
+      "link": "GiveMeFive"
+    }
+  }
+}
