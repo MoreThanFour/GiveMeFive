@@ -54,7 +54,7 @@ public class DispatchActivity extends Activity {
     private void startMainActivity(JSONObject data) {
         try {
             Intent toBackgroundService = new Intent(this, BackgroundService.class);
-            toBackgroundService.putExtra("FriendList", data.getJSONArray("data").toString());
+            toBackgroundService.putExtra("friendList", data.getJSONArray("data").toString());
             startService(toBackgroundService);
 
             Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
