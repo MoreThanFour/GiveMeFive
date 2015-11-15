@@ -39,6 +39,7 @@ public class BackgroundService extends Service
     private ArrayList<Boolean> friendsIsNear;
 
     private Boolean isRunning;
+    private Boolean isData;
     private Location currentLocation;
 
     // ----- CONSTRUCTORS -----
@@ -60,6 +61,7 @@ public class BackgroundService extends Service
         super.onCreate();
 
         isRunning = true;
+        isData = false;
 
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -123,9 +125,6 @@ public class BackgroundService extends Service
     {
         Log.i(TAG, "onStartCommand");
 
-        // Initialize friends
-        initFriends(intent);
-
         //Creating new thread for background service
         new Thread(new Runnable()
         {
@@ -134,21 +133,18 @@ public class BackgroundService extends Service
             {
                 while (isRunning)
                 {
-                    try
+                    if (!isData)
                     {
-                        Thread.sleep(TIME_OF_SLEEP);
-                        Log.d(TAG, "Time to restart");
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
+                        // Initialize friends
+                        initFriends(intent);
                     }
 
                     ParseUser currentUser = ParseUser.getCurrentUser();
 
-                    if (currentUser != null)
+                    if (currentUser != null && currentLocation != null)
                     {
                         // Update current user location into Parse Database.
+
                         ParseGeoPoint currentParseLocation = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
                         currentUser.put("location", currentParseLocation);
                         currentUser.saveEventually();
@@ -190,6 +186,17 @@ public class BackgroundService extends Service
                             });
                         }
                     }
+
+                    // Restart each TIME OF SLEEP ms, and run while the service don't stop
+                    try
+                    {
+                        Thread.sleep(TIME_OF_SLEEP);
+                        Log.d(TAG, "Time to restart");
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }).start();
@@ -223,21 +230,30 @@ public class BackgroundService extends Service
         friendsId = new ArrayList<String>();
         friendsIsNear = new ArrayList<Boolean>();
 
-        try
+        if (intent != null)
         {
-            JSONArray friendList = new JSONArray(intent.getStringExtra("friendList"));
-
-            for (int i = 0; i < friendList.length(); i++)
+            try
             {
-                Log.d(TAG, "'facebookId' = " + friendList.getJSONObject(i).toString());
+                isData = true;
 
-                friendsId.add((String) friendList.getJSONObject(i).get("id"));
-                friendsIsNear.add(false);
+                JSONArray friendList = new JSONArray(intent.getStringExtra("friendList"));
+
+                for (int i = 0; i < friendList.length(); i++)
+                {
+                    Log.d(TAG, "'facebookId' = " + friendList.getJSONObject(i).toString());
+
+                    friendsId.add((String) friendList.getJSONObject(i).get("id"));
+                    friendsIsNear.add(false);
+                }
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace();
             }
         }
-        catch (JSONException e)
+        else
         {
-            e.printStackTrace();
+            Log.e(TAG, "ERROR, the JSON object must be not null");
         }
 
     }
