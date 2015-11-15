@@ -4,12 +4,12 @@ Parse.Cloud.define("notify", function(request, response)
 {
     // And we push notification to the current user's Installation.
     var queryInstallation = new Parse.Query(Parse.Installation);
-    queryInstallation.equalTo('deviceToken', request.object.get('deviceToken'));
+    queryInstallation.equalTo('deviceToken', request.params.get('deviceToken'));
 
     Parse.Push.send({
         where: queryInstallation,
         data: {
-            alert: "Hey! " + request.object.get('name') + " is really close to you. Go give him five!"
+            alert: "Hey! " + request.params.get('name') + " is really close to you. Go give him five!"
         },
         success: function()
         {
