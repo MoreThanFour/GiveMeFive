@@ -164,28 +164,31 @@ public class BackgroundService extends Service
                             friendsQuery.add(friendQuery);
                         }
 
-                        ParseQuery.or(friendsQuery).findInBackground(new FindCallback<ParseUser>()
+                        if (!friendsQuery.isEmpty())
                         {
-                            public void done(List<ParseUser> objects, ParseException e)
+                            ParseQuery.or(friendsQuery).findInBackground(new FindCallback<ParseUser>()
                             {
-                                if (e == null)
+                                public void done(List<ParseUser> objects, ParseException e)
                                 {
-                                    // The query was successful.
-
-                                    for (int i = 0; i < objects.size(); i++)
+                                    if (e == null)
                                     {
-                                        Log.d(TAG, objects.get(i).get("location").toString());
-                                    }
+                                        // The query was successful.
 
-                                    // TODO: Look for each user if anyone is into the perimeter. For each one, call the Cloud Code to notify myself
+                                        for (int i = 0; i < objects.size(); i++)
+                                        {
+                                            Log.d(TAG, objects.get(i).get("location").toString());
+                                        }
+
+                                        // TODO: Look for each user if anyone is into the perimeter. For each one, call the Cloud Code to notify myself
+                                    }
+                                    else
+                                    {
+                                        // Something went wrong.
+                                        Log.e(TAG, "ERROR " + e.getCode() + ": " + e.getLocalizedMessage());
+                                    }
                                 }
-                                else
-                                {
-                                    // Something went wrong.
-                                    Log.e(TAG, "ERROR " + e.getCode() + ": " + e.getLocalizedMessage());
-                                }
-                            }
-                        });
+                            });
+                        }
                     }
                 }
             }
