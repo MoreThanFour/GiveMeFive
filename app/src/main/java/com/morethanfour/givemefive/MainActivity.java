@@ -59,7 +59,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
         listItems = new ArrayList<String>();
 
         JSONArray FriendList = null;
-        try {FriendList = new JSONArray(getIntent().getStringExtra("friendList"));} catch (JSONException e) {e.printStackTrace();}
+        try {
+            FriendList = new JSONArray(getIntent().getStringExtra("friendList"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         displayFriendList(FriendList);
         addFriendsToMap(FriendList);
     }
@@ -131,22 +135,29 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
 
         for (int i = 0; i < friendList.length(); i++) {
             ParseQuery<ParseUser> friendQuery = ParseUser.getQuery();
-            try {friendQuery.whereEqualTo("facebookId", (String) friendList.getJSONObject(i).get("id"));} catch (JSONException e) {e.printStackTrace();}
+            try {
+                friendQuery.whereEqualTo("facebookId", (String) friendList.getJSONObject(i).get("id"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             friendsQuery.add(friendQuery);
         }
 
-        ParseQuery.or(friendsQuery).findInBackground(new FindCallback<ParseUser>() {
-            public void done(List<ParseUser> users, ParseException e) {
-                if (e == null) {
-                    for (ParseUser user : users) {
-                        ParseGeoPoint location = (ParseGeoPoint) user.get("location");
-                        addFriendToMap(new LatLng(location.getLatitude(), location.getLongitude()));
+        if (!friendsQuery.isEmpty()) {
+            ParseQuery.or(friendsQuery).findInBackground(new FindCallback<ParseUser>() {
+                public void done(List<ParseUser> users, ParseException e) {
+                    if (e == null) {
+                        for (ParseUser user : users) {
+                            ParseGeoPoint location = (ParseGeoPoint) user.get("location");
+                            if (location != null)
+                                addFriendToMap(new LatLng(location.getLatitude(), location.getLongitude()));
+                        }
+                    } else {
+                        // Something went wrong.
                     }
-                } else {
-                    // Something went wrong.
                 }
-            }
-        });
+            });
+        }
     }
 
     private void addFriendToMap(LatLng latLng) {
