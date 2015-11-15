@@ -33,8 +33,11 @@ public class BackgroundService extends Service
     private static final String TAG = "BACKGROUND_SERVICE";
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     private static final int TIME_OF_SLEEP = 1000 * 10;
+    private static final double RANGE_OF_SEARCH = 1000.0;
 
     // ----- VARIABLES -----
+
+    private ArrayList<String> friendsName;
     private ArrayList<String> friendsId;
     private ArrayList<Boolean> friendsIsNear;
 
@@ -145,7 +148,7 @@ public class BackgroundService extends Service
                     {
                         // Update current user location into Parse Database.
 
-                        ParseGeoPoint currentParseLocation = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        final ParseGeoPoint currentParseLocation = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
                         currentUser.put("location", currentParseLocation);
                         currentUser.saveEventually();
 
@@ -173,9 +176,27 @@ public class BackgroundService extends Service
                                         for (int i = 0; i < objects.size(); i++)
                                         {
                                             Log.d(TAG, objects.get(i).get("location").toString());
+
+                                            if(currentParseLocation.distanceInKilometersTo((ParseGeoPoint) objects.get(i).get("location")) > RANGE_OF_SEARCH && !friendsIsNear.get(i))
+                                            {
+                                                // Set boolean state to true to don't notify the current user every time.
+                                                friendsIsNear.set(i, true);
+
+                                                // Now we can notify the current user.
+                                                Log.d(TAG, "JUST IMAGINE NOTIFY");
+                                                Log.d(TAG, "Hey! " + friendsName.get(i) + " is really close to you. Go give him five!");
+
+                                            }
+                                            else
+                                            {
+                                                Log.d(TAG, "" + friendsName.get(i) + " is not in the range of search");
+
+                                                // Set boolean state to false, so now if this friend is coming near the current user, the current user could be notify.
+                                                friendsIsNear.set(i, false);
+                                            }
                                         }
 
-                                        // TODO: Look for each user if anyone is into the perimeter. For each one, call the Cloud Code to notify myself
+
                                     }
                                     else
                                     {
@@ -227,6 +248,7 @@ public class BackgroundService extends Service
     {
         Log.d(TAG, "Getting friend list");
 
+        friendsName = new ArrayList<String>();
         friendsId = new ArrayList<String>();
         friendsIsNear = new ArrayList<Boolean>();
 
@@ -242,6 +264,7 @@ public class BackgroundService extends Service
                 {
                     Log.d(TAG, "'facebookId' = " + friendList.getJSONObject(i).toString());
 
+                    friendsName.add((String) friendList.getJSONObject(i).get("name"));
                     friendsId.add((String) friendList.getJSONObject(i).get("id"));
                     friendsIsNear.add(false);
                 }
