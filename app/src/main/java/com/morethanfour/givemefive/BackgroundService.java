@@ -33,7 +33,7 @@ public class BackgroundService extends Service
     private static final String TAG = "BACKGROUND_SERVICE";
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     private static final int TIME_OF_SLEEP = 1000 * 10;
-    private static final double RANGE_OF_SEARCH = 1000.0;
+    private static final double RANGE_OF_SEARCH = 1.0;
 
     // ----- VARIABLES -----
 
@@ -177,15 +177,17 @@ public class BackgroundService extends Service
                                         {
                                             Log.d(TAG, objects.get(i).get("location").toString());
 
-                                            if(currentParseLocation.distanceInKilometersTo((ParseGeoPoint) objects.get(i).get("location")) > RANGE_OF_SEARCH && !friendsIsNear.get(i))
+                                            if(currentParseLocation.distanceInKilometersTo((ParseGeoPoint) objects.get(i).get("location")) < RANGE_OF_SEARCH)
                                             {
+                                                if (!friendsIsNear.get(i))
+                                                {
+                                                    // Now we can notify the current user.
+                                                    Log.d(TAG, "JUST IMAGINE NOTIFY");
+                                                    Log.d(TAG, "Hey! " + friendsName.get(i) + " is really close to you. Go give him five!");
+                                                }
+
                                                 // Set boolean state to true to don't notify the current user every time.
                                                 friendsIsNear.set(i, true);
-
-                                                // Now we can notify the current user.
-                                                Log.d(TAG, "JUST IMAGINE NOTIFY");
-                                                Log.d(TAG, "Hey! " + friendsName.get(i) + " is really close to you. Go give him five!");
-
                                             }
                                             else
                                             {
@@ -213,8 +215,7 @@ public class BackgroundService extends Service
                     {
                         Thread.sleep(TIME_OF_SLEEP);
                         Log.d(TAG, "Time to restart");
-                    }
-                    catch (InterruptedException e)
+                    } catch (InterruptedException e)
                     {
                         e.printStackTrace();
                     }
