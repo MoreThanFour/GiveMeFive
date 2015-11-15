@@ -225,7 +225,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         public void onMyLocationChange(Location location) {
             LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
             if(map != null && first){
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 15.0f));
                 first = false;
             }
         }
