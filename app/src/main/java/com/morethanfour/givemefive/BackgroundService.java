@@ -15,8 +15,10 @@ import android.util.Log;
 
 import com.google.android.gms.location.LocationRequest;
 import com.parse.FindCallback;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseInstallation;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
@@ -24,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class BackgroundService extends Service
@@ -182,8 +185,13 @@ public class BackgroundService extends Service
                                                 if (!friendsIsNear.get(i))
                                                 {
                                                     // Now we can notify the current user.
-                                                    Log.d(TAG, "JUST IMAGINE NOTIFY");
                                                     Log.d(TAG, "Hey! " + friendsName.get(i) + " is really close to you. Go give him five!");
+
+                                                    HashMap<String, Object> params = new HashMap<String, Object>();
+                                                    params.put("deviceToken", ParseInstallation.getCurrentInstallation().get("deviceToken"));
+                                                    params.put("name", friendsName.get(i));
+
+                                                    ParseCloud.callFunctionInBackground("notify", params);
                                                 }
 
                                                 // Set boolean state to true to don't notify the current user every time.

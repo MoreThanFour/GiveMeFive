@@ -1,6 +1,6 @@
 // Method used to send Push Notifications to each user who have friends close to him.
 
-Parse.Cloud.define("hello", function(request, response)
+Parse.Cloud.define("notify", function(request, response)
 {
     // And we push notification to the current user's Installation.
     var queryInstallation = new Parse.Query(Parse.Installation);
