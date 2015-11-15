@@ -9,7 +9,7 @@ Parse.Cloud.define("notify", function(request, response)
     Parse.Push.send({
         where: queryInstallation,
         data: {
-            alert: "Hey! " + request.object.get('name') + " is really close to you. Go give him five!";
+            alert: "Hey! " + request.object.get('name') + " is really close to you. Go give him five!"
         },
         success: function()
         {
@@ -24,4 +24,4 @@ Parse.Cloud.define("notify", function(request, response)
     })
 
     response.success();
-}
+});
