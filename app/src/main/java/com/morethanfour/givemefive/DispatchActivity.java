@@ -40,6 +40,7 @@ public class DispatchActivity extends Activity {
                 HttpMethod.GET,
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
+                        Log.d("TEST", "onCompleted() called with: " + "response = [" + response + "]");
                         if (response.getError() == null){
                             startMainActivity(response.getJSONObject());
                         } else {

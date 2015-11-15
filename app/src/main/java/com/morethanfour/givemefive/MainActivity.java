@@ -5,6 +5,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -19,12 +21,17 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
+import com.facebook.AccessToken;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -35,16 +42,23 @@ import com.parse.ParseUser;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
-public class MainActivity extends Activity implements OnMapReadyCallback, LocationListener {
+public class MainActivity extends Activity implements OnMapReadyCallback {
 
     private ListView ListViewFriend;
     DrawerLayout drawer;
     private ArrayList<String> listItems;
     GoogleMap map;
+    HashMap<String, MarkerOptions> friendsOnMap;
+    boolean first = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,18 +68,19 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        friendsOnMap = new HashMap<>();
         ListViewFriend = (ListView) findViewById(R.id.left_drawer);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         listItems = new ArrayList<String>();
 
-        JSONArray FriendList = null;
+        JSONArray friendList = null;
         try {
-            FriendList = new JSONArray(getIntent().getStringExtra("friendList"));
+            friendList = new JSONArray(getIntent().getStringExtra("friendList"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        displayFriendList(FriendList);
-        addFriendsToMap(FriendList);
+        displayFriendList(friendList);
+        addFriendsToMap(friendList);
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -76,6 +91,22 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
         // Enabling MyLocation Layer of Google Map
         map.setMyLocationEnabled(true);
         map.getUiSettings().setMyLocationButtonEnabled(true);
+        map.setOnMyLocationChangeListener(myLocationChangeListener);
+
+        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        View mapView = mapFragment.getView();
+        if (mapView != null &&
+                mapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 30, 30);
+        }
 
         // Getting LocationManager object from System Service LOCATION_SERVICE
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -94,6 +125,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
             map.addMarker(new MarkerOptions().position(myPosition).title("Start"));
 
             Log.d("MAPS", "INFOS" + myPosition.latitude + myPosition.longitude);
+        }else {
+            location = map.getMyLocation();
+            if (location != null) {
+                LatLng myLocation = new LatLng(location.getLatitude(),  location.getLongitude());
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 13));
+            }
         }
     }
 
@@ -110,7 +147,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
     private void makeUseOfNewLocation(LatLng location) {
         map.addMarker(new MarkerOptions()
                 .position(location)
-                .title("C'est MOI :)"));
+                .title("MOI :)"));
 
         //Center the MAP on me
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 13));
@@ -150,7 +187,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
                         for (ParseUser user : users) {
                             ParseGeoPoint location = (ParseGeoPoint) user.get("location");
                             if (location != null)
-                                addFriendToMap(new LatLng(location.getLatitude(), location.getLongitude()));
+                                addFriendToMap((String) user.get("facebookId"), ParseUser.getCurrentUser().getUsername(),new LatLng(location.getLatitude(), location.getLongitude()));
                         }
                     } else {
                         // Something went wrong.
@@ -160,30 +197,37 @@ public class MainActivity extends Activity implements OnMapReadyCallback, Locati
         }
     }
 
-    private void addFriendToMap(LatLng latLng) {
-        map.addMarker(new MarkerOptions()
+    private void addFriendToMap(String id, String name, LatLng latLng) {
+//        Bitmap profPict= null;
+//        try {
+//            URL image_value = new URL("https://graph.facebook.com/"+id+"/picture" );
+//            profPict = BitmapFactory.decodeStream(image_value.openConnection().getInputStream());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        MarkerOptions mo = new MarkerOptions()
                 .position(latLng)
-                .title("A friend"));
+                .title(name)
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.user));
+
+
+        friendsOnMap.put(id,mo);
+        map.addMarker(mo);
     }
 
     public void onClickFloatingButtonOpenDrawer(View v) {
         drawer.openDrawer(Gravity.RIGHT);
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d("test", "test");
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-    }
+    private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
+        @Override
+        public void onMyLocationChange(Location location) {
+            LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+            if(map != null && first){
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 14.0f));
+                first = false;
+            }
+        }
+    };
 }
