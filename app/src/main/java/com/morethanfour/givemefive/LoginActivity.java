@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.facebook.AccessToken;
 import com.facebook.appevents.AppEventsLogger;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
@@ -51,6 +52,8 @@ public class LoginActivity extends Activity {
                 } else {
                     if (user.isNew()) {
                         Log.d("LOGIN", "User signed up and logged in through Facebook!");
+                        user.put("facebookId", AccessToken.getCurrentAccessToken().getUserId());
+                        user.saveInBackground();
                     } else {
                         Log.d("LOGIN", "User logged in through Facebook!");
                     }

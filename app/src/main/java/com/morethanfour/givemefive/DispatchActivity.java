@@ -54,7 +54,7 @@ public class DispatchActivity extends Activity {
     private void startMainActivity(JSONObject data) {
         try {
             Intent toMainActivity = new Intent(DispatchActivity.this, MainActivity.class);
-            toMainActivity.putExtra("FriendList", data.getJSONArray("data").toString());
+            toMainActivity.putExtra("friendList", data.getJSONArray("data").toString());
             startActivity(toMainActivity);
         } catch (JSONException e) {
             e.printStackTrace();

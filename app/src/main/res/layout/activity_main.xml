@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:map="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,7 +17,8 @@
             android:name="com.google.android.gms.maps.MapFragment"
             android:id="@+id/map"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            map:cameraZoom="13"/>
 
         <ImageButton
             android:id="@+id/fab"
@@ -26,7 +28,7 @@
             android:clickable="true"
             android:src="@drawable/ic_menu_black_24dp"
             app:layout_anchor="@id/content_frame"
-            app:layout_anchorGravity="top|right"
+            app:layout_anchorGravity="bottom|right"
             android:layout_gravity="right|top"
             android:onClick="onClickFloatingButtonOpenDrawer"/>
 
